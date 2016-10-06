@@ -1,0 +1,10 @@
+2004-09-15  <iz@elsis.si>
+	Menue.cpp, Menue.h: new menu, setupVref() access hiden to 
+	 <Left, Down, Ent> sequence 
+
+2004-09-13  <iz@elsis.si>
+	*.cpp: Removed unnecesary initilaization to zero 
+
+2004-09-10  <iz@elsis.si>
+	Rewriten in C++ from original C. 
+
