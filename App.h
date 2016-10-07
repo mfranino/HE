@@ -16,6 +16,7 @@ class App{
 public:
     App();
     void run();        // main application loop
+	static unsigned char val;
 
     static App app;
 private:

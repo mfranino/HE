@@ -20,8 +20,8 @@ Nvr.o:  Nvr.cpp Nvr.h Defines.h
 Curve.o:  Curve.cpp Curve.h Nvr.h Dmx.h Defines.h
 Kbd.o:  Kbd.cpp Kbd.h Defines.h
 Adc.o:  Adc.cpp Adc.h
-Spi.o:  Spi.cpp Spi.h Defines.h
-Scan.o:  Scan.cpp Scan.h Defines.h Kbd.h Adc.h Spi.h Dmx.h Nvr.h Curve.h
+Spi.o:  Spi.cpp Spi.h Defines.h Nvr.h
+Scan.o:  Scan.cpp Scan.h Defines.h Kbd.h Adc.h Spi.h Dmx.h Nvr.h Curve.h Menue.h
 Menue.o: Menue.cpp Menue.h Lcd.h Kbd.h Nvr.h Adc.h Dmx.h Curve.h Scan.h Defines.h
 Dda.o:	Dda.cpp Dda.h Defines.h
 

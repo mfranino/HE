@@ -1,0 +1,17 @@
+debugger.gdbAssemblyFlavor[0]=ATT disassembly
+debugger.gdbExe[0]=avr-gdb
+debugger.gdbTerminalScript[0]=/opt/CBuilderX/config/avarice.config
+history.files.active[0]=Menue.cpp
+history.files.open.1[0]=App.cpp,F;178,0
+history.files.open.2[0]=App.h,F;1,0
+history.files.open.3[0]=CPU View
+history.files.open.4[0]=Menue.cpp,F;117,3263
+team.ActiveVCS[0]=CVS
+team.CvsAccessMethod[0]=pserver
+team.CvsAutosaveEnabled[0]=1
+team.CvsModule[0]=digital/HE/SW
+team.CvsPruneEmptyDirs[0]=1
+team.CvsRepository[0]=/cvselsis
+team.CvsServer[0]=kalimero
+team.CvsShowConsole[0]=0
+team.CvsUsername[0]=cvselsis

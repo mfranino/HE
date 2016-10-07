@@ -21,7 +21,6 @@ typedef struct _Setup {
     unsigned int ref[3];
     unsigned int refTop[3], refBot[3];  // top and bottom voltage reference
     unsigned char outFunc[24];
-	unsigned char dpllEnable[3]; //DPLL enable flag
 } Setup;
 
 typedef struct _Mem {

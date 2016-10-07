@@ -16,7 +16,6 @@ class Menue{
 public:
     void base();
     static Menue menue;
-	static int tick;
 private:
     void mem();
     int memStoreTo();
@@ -32,7 +31,6 @@ private:
                         unsigned char n, unsigned int max, unsigned int min);
 	int memSelect();
     void voltageScreen();
-    void setupTimeBase();
     void delay();
     unsigned char getch();
 };
