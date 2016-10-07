@@ -16,8 +16,8 @@
 #define MEGACLOCK   16          // can be 4,8,12,16
 #define SIGNATURE 0xAA55        // eeprom signature
 
-#define NUMCHAN 24
-#define KBDTICK 66              // number of ticks for keyboard scan  
+#define NUMCHAN 12//24
+#define KBDTICK 66 // 66              // number of ticks for keyboard scan  
 #define REFRESHTICK 33          // number of ticks for channel output refresh
 
 #define VTOP 230                // max output voltage

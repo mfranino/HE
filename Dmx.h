@@ -19,8 +19,8 @@ public:
     static void dmx2Int();
     static void merge();
     static Dmx dmx;
-    static volatile unsigned char inVal[24];
-    static unsigned char mode;    // 0=1only, 1=2 only, 2=merge both
+    static volatile unsigned char inVal[24]; // inVal[24] -> chan values after dmx merge// rmsVal[24] -> chan values after phisiological curve // outVal[24] -> chan values after the RMS curve
+    static unsigned char mode  ;    // 0=1only, 1=2 only, 2=merge both
     static volatile unsigned char valid;
 private:
     static volatile unsigned char first1,scan1,read1, flag1;

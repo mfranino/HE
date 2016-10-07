@@ -23,11 +23,16 @@ extern "C" {
 #include "Menue.h"
 #include "App.h"
 
+#include "Spi.h"
+#include "Curve.h"
+
+
 //
 // Static class instances and members
 //
 
 App App::app;
+unsigned char App::val;
 
 App::App()
 {
@@ -39,8 +44,9 @@ App::App()
 
 void App::dmxScreen()           // output screen when DMX is active
 {
-    unsigned char rr, pg, page = 0, x, percent;
-    char key;
+   
+    unsigned char rr, pg, page = 0, x , percent;
+    int key;
     Lcd::lcd.clear();
     while (Dmx::valid) {
         pg = page * 12;
@@ -55,14 +61,12 @@ void App::dmxScreen()           // output screen when DMX is active
             else
                 printfL("FL ");
             Lcd::lcd.goTo(2, x);
-            percent =
-                (unsigned char) (Dmx::inVal[rr + 4 + pg] * 100 / 255);
+            percent =(unsigned char) (Dmx::inVal[rr + 4 + pg] * 100 / 255);
             if (percent < 100)
                 printfL("%2d ", percent);
             else
                 printfL("FL ");
-            percent =
-                (unsigned char) (Dmx::inVal[rr + 8 + pg] * 100 / 255);
+            percent = (unsigned char) (Dmx::inVal[rr + 8 + pg] * 100 / 255);
             Lcd::lcd.goTo(3, x);
             if (percent < 100)
                 printfL("%2d ", percent);
@@ -90,9 +94,10 @@ void App::dmxScreen()           // output screen when DMX is active
 
 void App::localScreen()
 {                               // output screen when DMX is inactive
-    unsigned char rr, pr, x, percent;
+	unsigned char rr, pr, x, percent;
     static unsigned char n;
-    char key;
+    //char key;
+	int key;
     Lcd::lcd.clear();
     Kbd::autoRepeat = 1;
   redisplay:
@@ -107,8 +112,10 @@ void App::localScreen()
             else
                 printfL(" %02d ", rr + 1);
             Lcd::lcd.goTo(1, x);
-            if (percent < 100)
+            if (percent < 100){
                 printfL(" %02d ", percent);
+				val = percent;
+			}
             else
                 printfL(" FL ");
             percent = (unsigned char) (Dmx::inVal[rr + 4] * 100 / 255);
@@ -119,7 +126,8 @@ void App::localScreen()
                 printfL(" %02d ", rr + 4 + 1);
             Lcd::lcd.goTo(3, x);
             if (percent < 100)
-                printfL(" %02d ", percent);
+			   printfL(" %02d ", percent);
+	
             else
                 printfL(" FL ");
         }
@@ -197,8 +205,10 @@ void App::localScreen()
             Lcd::lcd.goTo(3, x);
     }
   readkey:
-    while ((key = getchar()) == EOF) {
-        wdt_reset();
+
+   while ( (key = _getChar()) == EOF) {
+       //  Lcd::lcd.clear();
+		wdt_reset();
         if (Dmx::valid) {
             Kbd::autoRepeat = 0;
             return;
@@ -219,6 +229,7 @@ void App::localScreen()
                 if (Dmx::inVal[n] >= 255)
                     break;
                 Dmx::inVal[n]++;
+
                 pr = (unsigned char) (Dmx::inVal[n] * 100 / 255);
             }
             while (pr == percent);
@@ -229,6 +240,7 @@ void App::localScreen()
                 if (!Dmx::inVal[n])
                     break;
                 Dmx::inVal[n]--;
+
                 pr = (unsigned char) (Dmx::inVal[n] * 100 / 255);
             }
             while (pr == percent);
@@ -238,6 +250,7 @@ void App::localScreen()
             Menue::menue.base();
             Kbd::autoRepeat = 1;
             break;
+
         default:
             goto readkey;
     }
@@ -253,14 +266,15 @@ void App::run()
     printfLcd(0, 0, "Elsis digital ++");
     printfLcd(1, 0, "    V  %d.%d        ", VERSION/10, VERSION%10);
     printfLcd(3, 0, " ...booting...  ");
-    for (unsigned long wt = 0; wt < 1000000; wt++) {
+	
+    for (unsigned long wt = 0; wt < 100000 /*1000000*/; wt++) {
         wdt_reset();
         asm("nop\n");
     }
     sei();                      // get the world going
     for (;;) {
-        if (Dmx::valid)
-            dmxScreen();
+       if (Dmx::valid )
+            dmxScreen(); 
         else
             localScreen();
         wdt_reset();
@@ -269,7 +283,8 @@ void App::run()
 
 int main()
 {
-    wdt_enable(WDTO_1S);      // watchdog to 1 second
+  
+	//wdt_enable(WDTO_1S);      // watchdog to 1 second
     App::app.run();
     return 0;
 }
