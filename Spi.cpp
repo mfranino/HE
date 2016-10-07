@@ -18,6 +18,7 @@ extern "C"{
 }
 #include "Defines.h"
 #include "Spi.h"
+#include "Nvr.h"
 
 //
 // static class instance and members
@@ -25,7 +26,7 @@ extern "C"{
 
 Spi Spi::spi;
 unsigned char Spi::cnt, Spi::flagCurVol;
-unsigned char Spi::dpllEnable[3] = { 0x10, 0x10, 0x10};
+//unsigned char Spi::dpllEnable[3] = { 0x00, 0x00, 0x00}; //DPLL initially disabled
 volatile unsigned char Spi::outputCurrent[24],Spi::outputVoltage[24], Spi::outputStatus[3];
 unsigned char Spi::outVal[24];
 volatile lword Spi::outDirekt;
@@ -58,8 +59,8 @@ void Spi::scan()
         cbi( PORTB, 4 ); // Select R timebase
         b = SPSR;
         b = SPDR;
-        if ( flagCurVol ) SPDR = 0x0a|dpllEnable[0];
-        else SPDR = 0x05|dpllEnable[0]; // send first char
+        if ( flagCurVol ) SPDR = 0x0a|Nvr::setup.dpllEnable[0];
+        else SPDR = 0x05|Nvr::setup.dpllEnable[0]; // send first char
     }
     else if ( ( cnt > 0 ) && ( cnt < 9 ) ) { // 8 data bytes
         b = SPSR;
@@ -82,8 +83,8 @@ void Spi::scan()
         cbi( PORTB, 5 ); // Select S Timebase
         b = SPSR;
         b = SPDR;
-        if ( flagCurVol ) SPDR = 0x0a|dpllEnable[1];
-        else SPDR = 0x55|dpllEnable[1]; // send first char
+        if ( flagCurVol ) SPDR = 0x0a|Nvr::setup.dpllEnable[1];
+        else SPDR = 0x05|Nvr::setup.dpllEnable[1]; // send first char
     }
     else if ( ( cnt > 10 ) && ( cnt < 19 ) ) { // 8 data bytes
         b = SPSR;
@@ -100,14 +101,14 @@ void Spi::scan()
         outputStatus[1] = SPDR;
         SPDR = outDirekt.b.b1; // finish here with direkt flag
     }
-    // second
-    else if ( cnt == 20 ) { // second 0x55
+    // third
+    else if ( cnt == 20 ) { // third 0x55
         sbi( PORTB, 5 );
-        cbi( PORTB, 6 ); // Select S Timebase
+        cbi( PORTB, 6 ); // Select T Timebase
         b = SPSR;
         b = SPDR;
-        if ( flagCurVol ) SPDR = 0x0a|dpllEnable[2];
-        else SPDR = 0x05|dpllEnable[2]; // send first char
+        if ( flagCurVol ) SPDR = 0x0a|Nvr::setup.dpllEnable[2];
+        else SPDR = 0x05|Nvr::setup.dpllEnable[2]; // send first char
     }
     else if ( ( cnt > 20 ) && ( cnt < 29 ) ) { // 8 data bytes
         b = SPSR;

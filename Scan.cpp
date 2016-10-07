@@ -25,6 +25,7 @@ extern "C" {
 #include "Curve.h"
 #include "Dda.h"
 #include "Scan.h"
+#include "Menue.h"
 
 //
 // static classs instance and members
@@ -119,7 +120,7 @@ void Scan::scanOutputs()
     unsigned char phase;
     unsigned int rmsval;
     unsigned long dir = 0;
-    Spi::dpllEnable[0]=Spi::dpllEnable[1]=Spi::dpllEnable[2]=0x10;
+    //Spi::dpllEnable[0]=Spi::dpllEnable[1]=Spi::dpllEnable[2]=0x10;
     unsigned int curRms;
     for (unsigned char chn=0; chn<24; chn++) {
     	rmsVal[chn]=Curve::getRms(chn,chnVal[chn]);
@@ -134,7 +135,7 @@ void Scan::scanOutputs()
             rmsval=rmsVal[chn];
         else if (Nvr::setup.outFunc[chn]==FLUOPHASE) {
             rmsval=rmsVal[chn];
-            Spi::dpllEnable[phase]&=0;
+            Nvr::setup.dpllEnable[phase]&=0;
         }
         else
             rmsval=(unsigned int)(((unsigned long)rmsVal[chn]*
@@ -143,7 +144,8 @@ void Scan::scanOutputs()
         // get the phase angle value
         Spi::outVal[chn]=Curve::getPhaseAngle(rmsval);
         // figure out which channel is direkt
-        if ( Nvr::setup.outFunc[chn] == 4 )
+//        if ( Nvr::setup.outFunc[chn] == 4 ) // mozna napaka DIREKT=5
+        if ( Nvr::setup.outFunc[chn] == DIREKT )
             dir |= 1 << Spi::getPhaseTab(chn);
     }
     Spi::outDirekt.l = dir;
@@ -155,6 +157,7 @@ void Scan::scanAll()
     Spi::scan();
     Adc::scan();
     Kbd::scan();
+	Menue::tick--;
     if (cnt==REFRESHTICK-2)
         Dmx::merge();
     else if ((cnt==REFRESHTICK-1))

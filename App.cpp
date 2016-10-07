@@ -43,6 +43,7 @@ void App::dmxScreen()           // output screen when DMX is active
     char key;
     Lcd::lcd.clear();
     while (Dmx::valid) {
+	wdt_reset();
         pg = page * 12;
         printfLcd(0, 0, "DMX ch. %3d-%3d:", Nvr::setup.dmxAddr + pg,
                   Nvr::setup.dmxAddr + 11 + pg);

@@ -15,6 +15,7 @@ extern "C" {
 #include "Defines.h"
 #include "Lcd.h"
 #include "Kbd.h"
+#include "Spi.h"
 #include "Nvr.h"
 #include "Adc.h"
 #include "Dmx.h"
@@ -27,6 +28,7 @@ extern "C" {
 */ 
  
 Menue Menue::menue;
+int Menue::tick=MENUETICK;
 
 //
 // mem
@@ -424,21 +426,25 @@ void Menue::setupCurve()
 }
 
 /*!
-    Diagnstic of voltage measuring
+    Diagnostic of voltage measuring
  */
 void Menue::voltageScreen()
 {
     char key;
     unsigned char term = 0, state = 0;
     Lcd::lcd.clear();
+	tick = -1;
     do {
-        printfLcd(0, 0, "  Live voltage  ");
-        printfLcd(1, 5, "L1=%3dV",(unsigned) ((unsigned long) Nvr::setup.vref[0]
-                                        * Adc::getRms(0) / Nvr::setup.ref[0]));
-        printfLcd(2, 5, "L2=%3dV",(unsigned) ((unsigned long) Nvr::setup.vref[1]
-                                        * Adc::getRms(1) / Nvr::setup.ref[1]));
-        printfLcd(3, 5, "L3=%3dV",(unsigned) ((unsigned long) Nvr::setup.vref[2]
-                                        * Adc::getRms(2) / Nvr::setup.ref[2]));
+		if(tick<0){ //reduce voltage screen refresh for better readability
+	        printfLcd(0, 0, "  Live voltage  ");
+	        printfLcd(1, 5, "L1=%3dV",(unsigned) ((unsigned long) Nvr::setup.vref[0]
+	                                        * Adc::getRms(0) / Nvr::setup.ref[0]));
+	        printfLcd(2, 5, "L2=%3dV",(unsigned) ((unsigned long) Nvr::setup.vref[1]
+	                                        * Adc::getRms(1) / Nvr::setup.ref[1]));
+	        printfLcd(3, 5, "L3=%3dV",(unsigned) ((unsigned long) Nvr::setup.vref[2]
+	                                        * Adc::getRms(2) / Nvr::setup.ref[2]));
+			tick=MENUETICK;
+		}
         key = getchar();
         wdt_reset();
         if (key != EOF) {
@@ -448,6 +454,10 @@ void Menue::voltageScreen()
                         state = 1;
                         break;
                     case ENT:
+                        setupTimeBase();
+                        Lcd::lcd.clear();
+						tick=-1;
+                        break;
                     case ESC:
                         term = 1;
                         break;
@@ -468,6 +478,7 @@ void Menue::voltageScreen()
                     case ENT:
                         setupVref();
                         Lcd::lcd.clear();
+						tick=-1;
                         state = 0;
                         break;
                     case ESC:
@@ -479,6 +490,52 @@ void Menue::voltageScreen()
                 }
         }
     } while (!term);
+}
+
+void Menue::setupTimeBase()
+{
+	unsigned char key,temp[3];
+	unsigned char p=0;
+
+	temp[0]=Nvr::setup.dpllEnable[0];
+	temp[1]=Nvr::setup.dpllEnable[1];
+	temp[2]=Nvr::setup.dpllEnable[2];
+
+	printfLcd(0, 0, " Timebase setup ");
+   	printfLcd(1, 0, "                ");
+   	printfLcd(2, 0, "Net. PS         ");
+	printfLcd(3, 0, "Agr. PS         ");
+
+    do {
+		wdt_reset();
+		if((temp[0]==0x10) && (temp[1]==0x10) && (temp[2]==0x10)) {
+				printfLcd(2,8,"  <<  ");
+			    printfLcd(3,8,"      ");
+		}
+		else {
+				printfLcd(2,8,"      ");
+			    printfLcd(3,8,"  <<  ");
+		}
+        Lcd::lcd.goTo(p+2, 0);
+
+		while (!(key=getch())) wdt_reset();
+    	    switch (key) {
+    	    	case FORW : break;
+    	    	case BACK : break;
+    	    	case UP   : if (p>0) p--; 
+							temp[0]=temp[1]=temp[2]=0x10; //turn DPLL on on all phases
+							break;				
+    	    	case DOWN : if (p<1) p++;
+							temp[0]=temp[1]=temp[2]=0x00; //turn DPLL off on all phases
+							break;
+				case ENT  : Nvr::setup.dpllEnable[0]=temp[0];
+					    	Nvr::setup.dpllEnable[1]=temp[1];
+					    	Nvr::setup.dpllEnable[2]=temp[2];
+							Nvr::nvr.writeSetup();
+					    	break;						
+				default   : break;
+        }
+    } while ((key!=ESC) && (key!=ENT));
 }
 
 void Menue::setupVref()

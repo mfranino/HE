@@ -43,7 +43,7 @@ public:
     static volatile lword outDirekt;
     static volatile unsigned char outputCurrent[24], outputVoltage[24]; //diagnostic
     static volatile unsigned char outputStatus[3];    // diagnostic
-    static unsigned char dpllEnable[3];
+    //static unsigned char dpllEnable[3]; //!!!
 private:
     static unsigned char cnt,flagCurVol;
     static unsigned char phaseTab[24], phasePtr[24];
