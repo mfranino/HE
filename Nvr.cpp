@@ -14,7 +14,7 @@ extern "C" {
 #include <stdlib.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <avr/signal.h>
+//#include <avr/signal.h>
 #include <string.h>
 #include <avr/wdt.h>
 }
@@ -42,7 +42,6 @@ void Nvr::initFirstTime()
     setup.ref[0] = setup.ref[1] = setup.ref[2] = 470;
     setup.refTop[0] = setup.refTop[1] = setup.refTop[2] = 470;
     setup.refBot[0] = setup.refBot[1] = setup.refBot[2] = 350;
-	setup.dpllEnable[0]=setup.dpllEnable[1]=setup.dpllEnable[2]=0x00; //DPLL initially disabled
     memset(&setup.outFunc, 0, 24);
     eeprom_write_block((unsigned char *) &setup, &setupEE, sizeof(Setup));
     for (int i = 0; i < MAXMEM; ++i) {

@@ -12,7 +12,7 @@
 extern "C" {
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <avr/signal.h>
+//#include <avr/signal.h>
 #include <avr/pgmspace.h>
 #include <string.h>
 }
@@ -25,7 +25,7 @@ extern "C" {
 #include "Curve.h"
 #include "Dda.h"
 #include "Scan.h"
-#include "Menue.h"
+#include "App.h"
 
 //
 // static classs instance and members
@@ -47,7 +47,7 @@ Scan::Scan()
     OCR1A = 2000u; // time costant (16Mhz/8/2000 = 1KHz)
     TCNT1 = 0;
     TCCR1B = 0x0a; // clear on OC1A, 16 prescaler
-    sbi( TIMSK, OCIE1A ); // enable its interrupt
+    TIMSK |= _BV(OCIE1A);  //sbi( TIMSK, OCIE1A ); // enable its interrupt
 }
 
 //
@@ -67,10 +67,11 @@ unsigned char Scan::max(unsigned char a, unsigned char b)
 void Scan::xfade()
 {
     static unsigned int ma,mb;
-    if (!xfadeFlag) {
+    if (!xfadeFlag) { // to se zgodi èe niso definirani prelivi po spominih
         memcpy(&chnVal[0],(const void *)&Dmx::inVal[0],24);
         return;
     }
+	
     if (xfadeHold) return;
     time++;
     xfadeVal=Dda::next();
@@ -108,19 +109,19 @@ void Scan::xfadeGo()
 
 void Scan::xfadeCancelGo()
 {
-    cbi( TIMSK, OCIE1A );               // disable timer interrupt
+    TIMSK &= ~(_BV(OCIE1A));//cbi( TIMSK, OCIE1A );               // disable timer interrupt
     Dda::init(time,0,xfadeVal,0);       // revert dda
     xfadeBack=1;
-    sbi( TIMSK, OCIE1A );               // reenable timer interrupt
+   TIMSK |= _BV(OCIE1A);// sbi( TIMSK, OCIE1A );               // reenable timer interrupt
 }
 
 
 void Scan::scanOutputs()
 {
     unsigned char phase;
-    unsigned int rmsval;
+    unsigned int rmsval, rms, factor;
     unsigned long dir = 0;
-    //Spi::dpllEnable[0]=Spi::dpllEnable[1]=Spi::dpllEnable[2]=0x10;
+    Spi::dpllEnable[0]=Spi::dpllEnable[1]=Spi::dpllEnable[2]=0x10;
     unsigned int curRms;
     for (unsigned char chn=0; chn<24; chn++) {
     	rmsVal[chn]=Curve::getRms(chn,chnVal[chn]);
@@ -135,17 +136,21 @@ void Scan::scanOutputs()
             rmsval=rmsVal[chn];
         else if (Nvr::setup.outFunc[chn]==FLUOPHASE) {
             rmsval=rmsVal[chn];
-            Nvr::setup.dpllEnable[phase]&=0;
+            Spi::dpllEnable[phase]&=0;
         }
-        else
-            rmsval=(unsigned int)(((unsigned long)rmsVal[chn]*
+        else{
+            rms = rmsVal[chn];
+			factor = Nvr::setup.refTop[phase]/curRms;
+			rmsval=(unsigned int)(((unsigned long)rmsVal[chn]*
                     Nvr::setup.refTop[phase])/curRms);
+		}
         if (rmsval>255) rmsval=255;
         // get the phase angle value
-        Spi::outVal[chn]=Curve::getPhaseAngle(rmsval);
-        // figure out which channel is direkt
-//        if ( Nvr::setup.outFunc[chn] == 4 ) // mozna napaka DIREKT=5
-        if ( Nvr::setup.outFunc[chn] == DIREKT )
+		
+        Spi::outVal[chn]= Curve::getPhaseAngle(rmsval);
+        
+		// figure out which channel is direkt
+        if ( Nvr::setup.outFunc[chn] == 4 )
             dir |= 1 << Spi::getPhaseTab(chn);
     }
     Spi::outDirekt.l = dir;
@@ -157,13 +162,13 @@ void Scan::scanAll()
     Spi::scan();
     Adc::scan();
     Kbd::scan();
-	Menue::tick--;
     if (cnt==REFRESHTICK-2)
         Dmx::merge();
     else if ((cnt==REFRESHTICK-1))
         xfade();
     if(++cnt>REFRESHTICK) {
         scanOutputs();
+		
         cnt=0;
         unsigned int tcnt1Stop=TCNT1;
         tcnt1Lap=tcnt1Stop-tcnt1Start;
@@ -171,11 +176,11 @@ void Scan::scanAll()
 }
 
 extern "C"
-INTERRUPT( SIG_OUTPUT_COMPARE1A )
+ISR( TIMER1_COMPA_vect )
 {
-    cbi( TIMSK, OCIE1A ); // disable own interrupt
+    TIMSK &= ~(_BV(OCIE1A));//cbi( TIMSK, OCIE1A ); // disable own interrupt
     Scan::scanAll();
     cli();
-    sbi( TIMSK, OCIE1A ); // reenable own interrupt
+    TIMSK |= _BV(OCIE1A);//sbi( TIMSK, OCIE1A ); // reenable own interrupt
 }
 //eof

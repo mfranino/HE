@@ -12,7 +12,7 @@
 extern "C" {
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <avr/signal.h>
+//#include <avr/signal.h>
 }
 
 #include "Adc.h"
@@ -56,8 +56,8 @@ void Adc::adcInt()
     else ADCSR = 0x66;
 }
 
-INTERRUPT( SIG_ADC ) // use interrupt here to be interruptable
+ISR( ADC_vect ) // use interrupt here to be interruptable
 {
-    Adc::adcInt();
+       Adc::adcInt();
 }
 
