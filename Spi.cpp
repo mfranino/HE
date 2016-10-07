@@ -12,7 +12,7 @@
 extern "C"{
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <avr/signal.h>
+//#include <avr/signal.h>
 #include <avr/pgmspace.h>
 #include <string.h>
 }
@@ -34,11 +34,11 @@ volatile lword Spi::outDirekt;
 // table of phase connections
 //
 
-unsigned char Spi::phaseTab[24] __attribute__( ( __progmem__ ) ) = {
+unsigned char const Spi::phaseTab[24] PROGMEM = {
     0, 1, 6, 7, 12, 13, 18, 19, 2, 3, 8, 9, 14, 15, 20, 21, 4, 5, 10,
     11, 16, 17, 22, 23
 };
-unsigned char Spi::phasePtr[24] __attribute__( ( __progmem__ ) ) = {
+unsigned char const Spi::phasePtr[24] PROGMEM = {
     0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2, 0,
     0, 1, 1, 2, 2
 };
@@ -54,12 +54,16 @@ Spi::Spi()
 void Spi::scan()
 {
     unsigned char b;
+	unsigned char a;
+	
+	
     if ( !cnt ) { // first 0x55
-        cbi( PORTB, 4 ); // Select R timebase
+        PORTB &= ~(_BV(4)); //cbi( PORTB, 4 ); // Select R timebase
         b = SPSR;
         b = SPDR;
-        if ( flagCurVol ) SPDR = 0x0a|dpllEnable[0];
-        else SPDR = 0x05|dpllEnable[0]; // send first char
+        if ( flagCurVol )			 SPDR = 0x0a|dpllEnable[0];		
+        else 			 
+			 SPDR = 0x05|dpllEnable[0]; // send first chn
     }
     else if ( ( cnt > 0 ) && ( cnt < 9 ) ) { // 8 data bytes
         b = SPSR;
@@ -75,11 +79,12 @@ void Spi::scan()
         b = SPSR;
         outputStatus[0] = SPDR;
         SPDR = outDirekt.b.b0; // finish here with direkt flag
+				
     }
     // second
     else if ( cnt == 10 ) { // second 0x55
-        sbi( PORTB, 4 );
-        cbi( PORTB, 5 ); // Select S Timebase
+        PORTB |= _BV(4);  //sbi( PORTB, 4 );
+        PORTB &= ~(_BV(5));//cbi( PORTB, 5 ); // Select S Timebase
         b = SPSR;
         b = SPDR;
         if ( flagCurVol ) SPDR = 0x0a|dpllEnable[1];
@@ -94,16 +99,17 @@ void Spi::scan()
             outputVoltage[pgm_read_byte_near( ( unsigned int ) & phaseTab[cnt - 3] )] = SPDR; //
         // read output voltage
         SPDR = outVal[pgm_read_byte_near( ( unsigned int ) & phaseTab[cnt - 3] )];
+
     }
     else if ( cnt == 19 ) {
         b = SPSR;
         outputStatus[1] = SPDR;
         SPDR = outDirekt.b.b1; // finish here with direkt flag
     }
-    // second
+    // third
     else if ( cnt == 20 ) { // second 0x55
-        sbi( PORTB, 5 );
-        cbi( PORTB, 6 ); // Select S Timebase
+        PORTB |= _BV(5); //sbi( PORTB, 5 );
+        PORTB &= ~(_BV(6));  //cbi( PORTB, 6 ); // Select T Timebase
         b = SPSR;
         b = SPDR;
         if ( flagCurVol ) SPDR = 0x0a|dpllEnable[2];
@@ -118,6 +124,7 @@ void Spi::scan()
             outputVoltage[pgm_read_byte_near( ( unsigned int ) & phaseTab[cnt - 5] )] = SPDR; //
         // read output current
         SPDR = outVal[pgm_read_byte_near( ( unsigned int ) & phaseTab[cnt - 5] )];
+		
     }
     else if ( cnt == 29 ) {
         b = SPSR;
@@ -126,7 +133,7 @@ void Spi::scan()
     }
     // finish here
     else if ( cnt == 30 ) {
-        sbi( PORTB, 6 );
+        PORTB |= _BV(6);  //sbi( PORTB, 6 );
         flagCurVol = !flagCurVol;
     }
     if (++cnt>REFRESHTICK) cnt=0;

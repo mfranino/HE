@@ -17,6 +17,7 @@ extern "C" {
 }
 #include "Kbd.h"
 #include "Defines.h"
+#include "Lcd.h"
 
 //
 // Static Class instances and members
@@ -31,8 +32,10 @@ unsigned char Kbd::buff[8];
 extern "C" {
 int _getChar() {
     int c;
-    if (c=(int)Kbd::get()) return c;
-    else return EOF;
+	
+	    if (c=(int)Kbd::get()) return c;
+	    else return EOF;
+		
 }
 }
 
@@ -70,6 +73,7 @@ void Kbd::scan()
 
 unsigned char Kbd::get()
 {
+
     if (!cnt) return 0;
     unsigned char key=buff[rp];
     if (rp<7) rp++;

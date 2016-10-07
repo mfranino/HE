@@ -420,6 +420,9 @@ void Menue::setupCurve()
             break;
         case ESC:
             break;
+		default:
+		    goto rdsp;
+		
     }
 }
 
@@ -439,7 +442,7 @@ void Menue::voltageScreen()
                                         * Adc::getRms(1) / Nvr::setup.ref[1]));
         printfLcd(3, 5, "L3=%3dV",(unsigned) ((unsigned long) Nvr::setup.vref[2]
                                         * Adc::getRms(2) / Nvr::setup.ref[2]));
-        key = getchar();
+        key = getch();
         wdt_reset();
         if (key != EOF) {
             if (!state)
@@ -448,6 +451,7 @@ void Menue::voltageScreen()
                         state = 1;
                         break;
                     case ENT:
+						setupVref();
                     case ESC:
                         term = 1;
                         break;
@@ -521,7 +525,7 @@ void Menue::setupVref()
         }
     } while (((unsigned char) key != ESC) && ((unsigned char) key != ENT));
     if (key == ESC)
-        return;
+        voltageScreen();
     // Voltage reference calculation
     for (n = 0; n < 3; n++) {
         Nvr::setup.ref[n] = Adc::getRms(n);
@@ -667,7 +671,7 @@ void Menue::delay()
 unsigned char Menue::getch()
 {
     char key;
-    while ((key=getchar()) == EOF)
+    while ((key=_getChar()) == EOF)
         wdt_reset();
     return (unsigned char) key;
 }

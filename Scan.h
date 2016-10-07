@@ -23,12 +23,14 @@ public:
     volatile static unsigned char xfadeFlag;
     static unsigned char xfadeHold;
     volatile static unsigned int xfadeVal;
+	
+	static unsigned char chnVal[24],rmsVal[24]; // inVal[24] -> chan values after dmx merge// rmsVal[24] -> chan values after phisiological curve // outVal[24] -> chan values after the RMS curve
 private:
     static void scanOutputs();
     static void xfade();
     static unsigned char max(unsigned char a, unsigned char b);
     static unsigned char cnt;
-    static unsigned char chnVal[24],rmsVal[24];
+    //static unsigned char chnVal[24],rmsVal[24]; // inVal[24] -> chan values after dmx merge// rmsVal[24] -> chan values after phisiological curve // outVal[24] -> chan values after the RMS curve
     static unsigned int time;
     static unsigned char xfadeBack;
 };

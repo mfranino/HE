@@ -39,13 +39,13 @@ public:
     {
         return  pgm_read_byte_near( ( unsigned int )&phaseTab[chn]);
     };
-    static unsigned char outVal[24]; // output values 
+    static unsigned char outVal[24]; // output values  // inVal[24] -> chan values after dmx merge// rmsVal[24] -> chan values after phisiological curve // outVal[24] -> chan values after the RMS curve
     static volatile lword outDirekt;
     static volatile unsigned char outputCurrent[24], outputVoltage[24]; //diagnostic
     static volatile unsigned char outputStatus[3];    // diagnostic
     static unsigned char dpllEnable[3];
 private:
     static unsigned char cnt,flagCurVol;
-    static unsigned char phaseTab[24], phasePtr[24];
+    static unsigned char const phaseTab[24],  phasePtr[24];
 };
 #endif
