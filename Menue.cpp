@@ -422,18 +422,21 @@ void Menue::setupCurve()
             break;
         case ESC:
             break;
+// 		default:
+// 		    goto rdsp;
+// 		
     }
 }
 
 /*!
-    Diagnostic of voltage measuring
+    Diagnstic of voltage measuring
  */
 void Menue::voltageScreen()
 {
-    char key;
+    int key;
     unsigned char term = 0, state = 0;
     Lcd::lcd.clear();
-	tick = -1;
+		tick = -1;
     do {
 		if(tick<0){ //reduce voltage screen refresh for better readability
 	        printfLcd(0, 0, "  Live voltage  ");
@@ -445,7 +448,7 @@ void Menue::voltageScreen()
 	                                        * Adc::getRms(2) / Nvr::setup.ref[2]));
 			tick=MENUETICK;
 		}
-        key = getchar();
+        key = _getChar();
         wdt_reset();
         if (key != EOF) {
             if (!state)
@@ -454,10 +457,11 @@ void Menue::voltageScreen()
                         state = 1;
                         break;
                     case ENT:
-                        setupTimeBase();
+						setupTimeBase();
                         Lcd::lcd.clear();
 						tick=-1;
                         break;
+						//setupVref();
                     case ESC:
                         term = 1;
                         break;
@@ -519,7 +523,7 @@ void Menue::setupTimeBase()
         Lcd::lcd.goTo(p+2, 0);
 
 		while (!(key=getch())) wdt_reset();
-    	    switch (key) {
+    	    switch ((unsigned char)key) {
     	    	case FORW : break;
     	    	case BACK : break;
     	    	case UP   : if (p>0) p--; 
@@ -537,6 +541,7 @@ void Menue::setupTimeBase()
         }
     } while ((key!=ESC) && (key!=ENT));
 }
+
 
 void Menue::setupVref()
 {
@@ -577,8 +582,9 @@ void Menue::setupVref()
                 break;
         }
     } while (((unsigned char) key != ESC) && ((unsigned char) key != ENT));
-    if (key == ESC)
-        return;
+    if (key == ESC) return;
+	
+       // voltageScreen();
     // Voltage reference calculation
     for (n = 0; n < 3; n++) {
         Nvr::setup.ref[n] = Adc::getRms(n);
@@ -723,8 +729,8 @@ void Menue::delay()
 
 unsigned char Menue::getch()
 {
-    char key;
-    while ((key=getchar()) == EOF)
+    int key;
+    while ((key=_getChar()) == EOF)
         wdt_reset();
     return (unsigned char) key;
 }

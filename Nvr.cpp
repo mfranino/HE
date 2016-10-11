@@ -14,7 +14,6 @@ extern "C" {
 #include <stdlib.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <avr/signal.h>
 #include <string.h>
 #include <avr/wdt.h>
 }

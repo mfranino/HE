@@ -31,7 +31,7 @@ FILE *Lcd::console;
 //
 
 extern "C" {
-    int _putChar(char c) {
+    int _putChar(char c, FILE *unused) {
         Lcd::write((unsigned char) c);
         return 0;
     }
@@ -39,19 +39,28 @@ extern "C" {
 
 Lcd::Lcd()
 {
-    console = fdevopen(_putChar, _getChar, 0);
+    console = fdevopen(_putChar, NULL);
     PORTA = 0xff;               // pullups for data
     DDRA = 0;
-    cbi(PORTC, EN);
-    sbi(DDRC, EN);              // set EN pin to output
-    sbi(PORTG, RW);
-    sbi(DDRG, RW);              // set RW to read
-    cbi(PORTC, RS);
-    sbi(DDRC, RS);              // set RS to 0
+
+	PORTC &= ~(_BV(EN)); //cbi(PORTC, EN);
+    DDRC |= _BV(EN); //sbi(DDRC, EN);              // set EN pin to output
+	PORTG |= _BV(RW);	//sbi(PORTG, RW);
+    DDRG |= _BV(RW);	//sbi(DDRG, RW);   	          // set RW to read
+	PORTC &= ~(_BV(RS));	//cbi(PORTC, RS);
+    DDRC |= _BV(RS);	//sbi(DDRC, RS);              // set RS to 0
     for (unsigned char i = 0; i < 6; i++) {
         setInterface();
     }
     outCommand(0x38);           // data length = 8 bit
+	 asm("nop\n\t" "nop\n\t" "nop\n\t" "nop\n\t");
+	outCommand(0x38);
+	 asm("nop\n\t" "nop\n\t" "nop\n\t" "nop\n\t");
+	  asm("nop\n\t" "nop\n\t" "nop\n\t" "nop\n\t");
+	   asm("nop\n\t" "nop\n\t" "nop\n\t" "nop\n\t");
+	    asm("nop\n\t" "nop\n\t" "nop\n\t" "nop\n\t");
+		 asm("nop\n\t" "nop\n\t" "nop\n\t" "nop\n\t");
+	outCommand(0x38);
     outCommand(0x08);           // display and cursor off
     outCommand(0x06);           // cursor advance mode
     outCommand(0x01);           // clear display
@@ -65,13 +74,13 @@ void Lcd::tstDsp()
     DDRA = 0;
     PORTA = 0xff;
     do {
-        sbi(PORTG, RW);
-        cbi(PORTC, RS);         // R/W = 1 , RS = 0
-        sbi(PORTC, EN);         // EN = 1
+        PORTG |= _BV(RW);	//sbi(PORTG, RW);
+        PORTC &= ~(_BV(RS));		//cbi(PORTC, RS);         // R/W = 1 , RS = 0
+        PORTC |= _BV(EN);		//sbi(PORTC, EN);         // EN = 1
         asm("nop\n\t" "nop\n\t" "nop\n\t" "nop\n\t");
         asm("nop\n\t" "nop\n\t" "nop\n\t" "nop\n\t");
-        s = PINA;;
-        cbi(PORTC, EN);         // EN = 0
+        s = PINA;
+        PORTC &= ~(_BV(EN));		//cbi(PORTC, EN);         // EN = 0
     }
     while ((s & 0x80) && (s != 0xff));
 }
@@ -79,44 +88,46 @@ void Lcd::tstDsp()
 void Lcd::setInterface()
 {
     DDRA = 0xff;
-    cbi(PORTG, RW);
-    cbi(PORTC, RS);             // R/W = 0 , RS = 0
-    sbi(PORTC, EN);             // EN = 1
-    PORTA = 0x38;               // data
+    PORTG &= ~(_BV(RW));  	//cbi(PORTG, RW);
+    PORTC &= ~(_BV(RS));	//cbi(PORTC, RS);             // R/W = 0 , RS = 0
+    PORTC |= _BV(EN);	//sbi(PORTC, EN);             // EN = 1
+    PORTA = 0x38;               // data /operating mode 8 bit/ 2 row mode / 8 line mode
     asm("nop\n\t" "nop\n\t" "nop\n\t" "nop\n\t");
     asm("nop\n\t" "nop\n\t" "nop\n\t" "nop\n\t");
-    cbi(PORTB, EN);
+    PORTB &= ~(_BV(EN));	//cbi(PORTB, EN);
 }
 
 void Lcd::outCommand(unsigned char cmd)
 {
     tstDsp();
     DDRA = 0xff;
-    cbi(PORTG, RW);
-    cbi(PORTC, RS);             // R/W = 0 , RS = 0
-    sbi(PORTC, EN);             // EN = 1
+	PORTG &= ~(_BV(RW));    //cbi(PORTG, RW);
+    PORTC &= ~(_BV(RS));	//cbi(PORTC, RS);             // R/W = 0 , RS = 0
+    PORTC |= _BV(EN);	//sbi(PORTC, EN);             // EN = 1
     PORTA = cmd;                // data
     asm("nop\n\t" "nop\n\t" "nop\n\t" "nop\n\t");
     asm("nop\n\t" "nop\n\t" "nop\n\t" "nop\n\t");
-    cbi(PORTC, EN);
+    PORTC &= ~(_BV(EN));	//cbi(PORTC, EN);
 }
 
 void Lcd::write(unsigned char c)
 {
     tstDsp();
     DDRA = 0xff;
-    cbi(PORTG, RW);
-    sbi(PORTC, RS);             // R/W = 0 , RS = 1
-    sbi(PORTC, EN);             // EN = 1
+	PORTG &= ~(_BV(RW));    //cbi(PORTG, RW);
+	PORTC |= _BV(RS);    //sbi(PORTC, RS);             // R/W = 0 , RS = 1
+	PORTC |= _BV(EN);    //sbi(PORTC, EN);             // EN = 1
     PORTA = c;                  // data
     asm("nop\n\t" "nop\n\t" "nop\n\t" "nop\n\t");
     asm("nop\n\t" "nop\n\t" "nop\n\t" "nop\n\t");
-    cbi(PORTC, EN);
+    PORTC &= ~(_BV(EN));	//cbi(PORTC, EN);
 }
 
 void Lcd::goTo(unsigned char y, unsigned char x)
 {
-    unsigned char pos = x;
+    /*prva vrsta se zaène z addr 0x80, druga 0xC0, tretja 0x94, èetrta 0xD4*/
+	
+	unsigned char pos = x;
     switch (y) {
         case 0:
             break;

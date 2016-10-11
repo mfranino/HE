@@ -17,7 +17,7 @@ extern "C" {
 #include <stdio.h>
 // use a c++ compatible PSTR here
 #define _PSTR(s) ({static char __c[] PROGMEM = (s); &__c[0];})
-#define printfL(fmt, args...)   printf_P( _PSTR(fmt), ## args)
+#define printfL(fmt, args...)   printf_P( PSTR(fmt), ## args)
 }
 
 class Lcd{
@@ -28,6 +28,7 @@ public:
     static void write(unsigned char c);
     void goTo(unsigned char y, unsigned char x);
     void print(unsigned char y, unsigned char x, char const *fmt, ...);
+
 private:
     static void tstDsp();
     void setInterface();
@@ -35,5 +36,5 @@ private:
     static FILE * console;
 };
 
-#define printfLcd(x,y,fmt,args...)  Lcd::lcd.print(x,y, _PSTR(fmt) , ## args)
+#define printfLcd(x,y,fmt,args...)  Lcd::lcd.print(x,y, PSTR(fmt) , ## args)
 #endif
