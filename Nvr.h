@@ -50,6 +50,7 @@ public:
     static Mem memNext;         // next memory
     char numCurrent, numNext, numPrevious;     // [-1 = empty]
     unsigned char memValid[MAXMEM];
+	
 private:
     void initFirstTime();
     static Setup setupEE;              // eeprom setup

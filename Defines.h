@@ -18,7 +18,7 @@
 
 #define NUMCHAN 24
 #define KBDTICK 66              // number of ticks for keyboard scan
-#define MENUETICK 500			// number of ticks for menue refresh (approx. 500 ms)  
+#define MENUETICK 500			// number of ticks for menue refresh (approx. 500 ms)   
 #define REFRESHTICK 33          // number of ticks for channel output refresh
 
 #define VTOP 230                // max output voltage
