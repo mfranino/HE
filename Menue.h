@@ -34,6 +34,7 @@ private:
 	int memSelect();
     void voltageScreen();
 	void setupTimeBase();
+	void debugWin();
     void delay();
     unsigned char getch();
 };

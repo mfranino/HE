@@ -353,6 +353,9 @@ void Menue::setup()
             case UP:
                 setupCurve();
                 goto rep1;
+			case DOWN:
+                debugWin();
+                goto rep1;
             case FORW:
                 voltageScreen();
                 goto rep1;
@@ -543,6 +546,28 @@ void Menue::setupTimeBase()
 }
 
 
+void Menue::debugWin()
+{
+	int key;
+	
+	Lcd::lcd.clear();
+	
+	do {
+	
+			printfLcd(0, 0, "  Debug  ");
+			printfLcd(1, 5, "L1=%3dV",(unsigned) Spi::outVal[0]);
+			printfLcd(2, 5, "L2=%3dV",(unsigned) ((unsigned long) Nvr::setup.vref[1] * Adc::getRms(1) / Nvr::setup.ref[1]));
+			printfLcd(3, 5, "L3=%3dV",(unsigned) ((unsigned long) Nvr::setup.vref[2]
+			* Adc::getRms(2) / Nvr::setup.ref[2]));
+			
+		
+		key = _getChar();
+		wdt_reset();
+		
+		
+	} while ((key!=ESC) && (key!=ENT));
+}
+
 void Menue::setupVref()
 {
     unsigned int val;
@@ -603,7 +628,7 @@ void Menue::setupVref()
 /*!
     Basic number editing
  */
-unsigned int Menue::doEdit(unsigned int &param, unsigned char x, \
+unsigned int Menue::doEdit(unsigned int &param, unsigned char x, 
                            unsigned char n, unsigned int max, unsigned int min)
 {
     if (n>4) n=4;
