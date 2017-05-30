@@ -150,6 +150,7 @@ void Dmx::merge()            // merge here
         if (valid=valid1)
             for ( chn = 0; chn < 24; chn++ )
                 inVal[chn]=inBuff1[chn];
+
     }
 
     else if ( mode == 1 ) {

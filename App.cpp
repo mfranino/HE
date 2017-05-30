@@ -73,7 +73,7 @@ void App::dmxScreen()           // output screen when DMX is active
             else
                 printfL("FL ");
         }
-        if ((key = getchar()) != EOF) {
+        if ((key = _getChar()) != EOF) {
             switch ((unsigned char) key) {
                 case BACK:
                     page = 0;
@@ -280,7 +280,7 @@ void App::run()
 
 int main()
 {
-	wdt_enable(WDTO_1S);      // watchdog to 1 second
+//	wdt_enable(WDTO_1S);      // watchdog to 1 second
     App::app.run();
     return 0;
 }

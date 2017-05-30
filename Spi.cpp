@@ -33,15 +33,20 @@ volatile lword Spi::outDirekt;
 //
 // table of phase connections
 //
-
+// 
+// unsigned char const Spi::phaseTab[24] PROGMEM = {
+//     0, 1, 6, 7,12,13,18,19, 2, 3, 8, 9,14,15,20,21, 4, 5,10,11,16, 17,22,23
+// };
+// unsigned char const Spi::phasePtr[24] PROGMEM = {
+// 	0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2
+// };
 unsigned char const Spi::phaseTab[24] PROGMEM = {
-    0, 1, 6, 7, 12, 13, 18, 19, 2, 3, 8, 9, 14, 15, 20, 21, 4, 5, 10,
-    11, 16, 17, 22, 23
+    0, 1, 2, 3,12,13,14,15, 4, 5, 6, 7,16,17,18,19, 8, 9,10,11,20,21,22,23
 };
 unsigned char const Spi::phasePtr[24] PROGMEM = {
-    0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2, 0,
-    0, 1, 1, 2, 2
+	0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2
 };
+
 
 
 Spi::Spi()
@@ -53,19 +58,14 @@ Spi::Spi()
 
 void Spi::scan()
 {
-    unsigned char b;
 
 
     if ( !cnt ) { // first 0x55
         PORTB &= ~(_BV(4)); //cbi( PORTB, 4 ); // Select R timebase
-        b = SPSR;
-        b = SPDR;
-        if ( flagCurVol ) SPDR = 0x0a||Nvr::setup.dpllEnable[0];
-        else
-			 SPDR = 0x05||Nvr::setup.dpllEnable[0];; // send first chn
+        if ( flagCurVol ) SPDR = 0x0a|Nvr::setup.dpllEnable[0];
+        else  SPDR = 0x05|Nvr::setup.dpllEnable[0];// send first chn
     }
     else if ( ( cnt > 0 ) && ( cnt < 9 ) ) { // 8 data bytes
-        b = SPSR;
         if ( !flagCurVol )
             outputCurrent[pgm_read_byte_near( ( unsigned int ) & phaseTab[cnt - 1] )] = SPDR; //
         // read output current
@@ -73,9 +73,8 @@ void Spi::scan()
             outputVoltage[pgm_read_byte_near( ( unsigned int ) & phaseTab[cnt - 1] )] = SPDR; //
         // read output voltage
         SPDR = outVal[pgm_read_byte_near( ( unsigned int ) & phaseTab[cnt - 1] )];
-    }
+				    }
     else if ( cnt == 9 ) {
-        b = SPSR;
         outputStatus[0] = SPDR;
         SPDR = outDirekt.b.b0; // finish here with direkt flag
 
@@ -84,13 +83,10 @@ void Spi::scan()
     else if ( cnt == 10 ) { // second 0x55
         PORTB |= _BV(4);  //sbi( PORTB, 4 );
         PORTB &= ~(_BV(5));//cbi( PORTB, 5 ); // Select S Timebase
-        b = SPSR;
-        b = SPDR;
         if ( flagCurVol ) SPDR = 0x0a|Nvr::setup.dpllEnable[1];
-        else SPDR = 0x55|Nvr::setup.dpllEnable[1]; // send first char
+        else SPDR = 0x05|Nvr::setup.dpllEnable[1]; // send first char
     }
     else if ( ( cnt > 10 ) && ( cnt < 19 ) ) { // 8 data bytes
-        b = SPSR;
         if ( !flagCurVol )
             outputCurrent[pgm_read_byte_near( ( unsigned int ) & phaseTab[cnt - 3] )] = SPDR; //
         // read output current
@@ -98,10 +94,8 @@ void Spi::scan()
             outputVoltage[pgm_read_byte_near( ( unsigned int ) & phaseTab[cnt - 3] )] = SPDR; //
         // read output voltage
         SPDR = outVal[pgm_read_byte_near( ( unsigned int ) & phaseTab[cnt - 3] )];
-
-    }
+		}
     else if ( cnt == 19 ) {
-        b = SPSR;
         outputStatus[1] = SPDR;
         SPDR = outDirekt.b.b1; // finish here with direkt flag
     }
@@ -109,13 +103,10 @@ void Spi::scan()
     else if ( cnt == 20 ) { // second 0x55
         PORTB |= _BV(5); //sbi( PORTB, 5 );
         PORTB &= ~(_BV(6));  //cbi( PORTB, 6 ); // Select T Timebase
-        b = SPSR;
-        b = SPDR;
         if ( flagCurVol ) SPDR = 0x0a|Nvr::setup.dpllEnable[2];
         else SPDR = 0x05|Nvr::setup.dpllEnable[2]; // send first char
     }
     else if ( ( cnt > 20 ) && ( cnt < 29 ) ) { // 8 data bytes
-        b = SPSR;
         if ( !flagCurVol )
             outputCurrent[pgm_read_byte_near( ( unsigned int ) & phaseTab[cnt - 5] )] = SPDR; //
         // read output current
@@ -123,10 +114,8 @@ void Spi::scan()
             outputVoltage[pgm_read_byte_near( ( unsigned int ) & phaseTab[cnt - 5] )] = SPDR; //
         // read output current
         SPDR = outVal[pgm_read_byte_near( ( unsigned int ) & phaseTab[cnt - 5] )];
-
-    }
+		    }
     else if ( cnt == 29 ) {
-        b = SPSR;
         outputStatus[2] = SPDR;
         SPDR = outDirekt.b.b2; // finish here with direkt flag
     }
